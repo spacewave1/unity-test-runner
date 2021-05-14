@@ -14,106 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 12.x
-      - run: yarn
-      - run: yarn lint
-      - run: yarn test
-      - run: yarn build || { echo "build command should always succeed" ; exit 61; }
-      - run: yarn build --quiet && git diff --quiet action || { echo "ERROR - index.js is different from repository version. Forgot to run `yarn build`?" ; exit 62; }
 
-  testAllModesLikeInTheReadme:
-    name: Test in ${{ matrix.testMode }} on version ${{ matrix.unityVersion }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        projectPath:
-          - unity-project-with-correct-tests
-        unityVersion:
-          - 2019.2.11f1
-        testMode:
-          - playmode
-          - editmode
-    steps:
-      ###########################
-      #         Checkout        #
-      ###########################
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          lfs: true
-
-      ###########################
-      #          Cache          #
-      ###########################
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
-          restore-keys: |
-            Library-
-      - uses: ./
-        id: tests
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          testMode: ${{ matrix.testMode }}
-          artifactsPath: ${{ matrix.testMode }}-artifacts
-          customParameters: -profile SomeProfile -someBoolean -someValue exampleValue
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Test results for ${{ matrix.testMode }}
-          path: ${{ steps.tests.outputs.artifactsPath }}
-          retention-days: 14
-
-  testRunnerInAllModes:
-    name: Test all modes ✨
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        projectPath:
-          - unity-project-with-correct-tests
-        unityVersion:
-          - 2019.2.11f1
-    steps:
-      ###########################
-      #         Checkout        #
-      ###########################
-      - uses: actions/checkout@v2
-        with:
-          lfs: true
-
-      ###########################
-      #          Cache          #
-      ###########################
-      - uses: actions/cache@v1.1.0
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-
-            Library-
-
-      # Configure test runner
-      - name: Run tests
-        id: allTests
-        uses: ./
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          testMode: all
-          # Test implicit artifactsPath, by not setting it
-
-      # Upload artifacts
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (all)
-          path: ${{ steps.allTests.outputs.artifactsPath }}
-          retention-days: 14
 
   testRunnerInEditMode:
     name: Test edit mode 📝
@@ -123,8 +24,6 @@ jobs:
       matrix:
         unityVersion:
           - 2019.2.11f1
-        projectPath:
-          - unity-project-with-correct-tests
     steps:
       ###########################
       #         Checkout        #
@@ -168,8 +67,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - unity-project-with-correct-tests
         unityVersion:
           - 2019.2.11f1
     steps:
@@ -217,8 +114,6 @@ jobs:
       matrix:
         unityVersion:
           - 2019.2.11f1
-        projectPath:
-          - unity-project-with-correct-tests
     steps:
       ###########################
       #         Checkout        #
